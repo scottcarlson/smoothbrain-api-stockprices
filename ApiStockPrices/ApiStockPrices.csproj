@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="H.Necessaire" Version="2.29.3" />
+    <PackageReference Include="H.Necessaire.Serialization" Version="2.29.3" />
+    <PackageReference Include="TeaFiles.Net" Version="1.0.0.35" />
+    <PackageReference Include="Bogus" Version="34.0.2" />
+    <PackageReference Include="Intrinio.SDK" Version="7.1.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+</Project>
