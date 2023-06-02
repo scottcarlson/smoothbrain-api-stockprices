@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
 using ApiStockPrices;
-using H.Necessaire;
 using Intrinio.SDK.Model;
-using Polly;
 using TeaTime;
 using System.IO;
 
@@ -156,16 +154,6 @@ app.MapGet("/stock-prices/stream", async (
         // @see https://stackoverflow.com/a/1864586
         responseProvider.Dispose();
     }
-});
-
-// This is for testing streaming data
-app.MapGet("/data-entries-example", async (HttpContext context, string? t) =>
-{
-    var streamProvider = new StreamProvider();
-
-    context.Response.ContentType = "text/plain; charset=utf-8; x-subtype=json";
-    double? desiredDurationInSeconds = t?.ParseToDoubleOrFallbackTo(null);
-    await streamProvider.StreamDataEntriesTo(context.Response.Body, desiredDuration: desiredDurationInSeconds == null ? null : TimeSpan.FromSeconds(desiredDurationInSeconds.Value));
 });
 
 app.Run();

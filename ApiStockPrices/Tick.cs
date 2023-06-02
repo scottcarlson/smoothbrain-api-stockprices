@@ -1,5 +1,4 @@
-﻿using System;
-using TeaTime;
+﻿using TeaTime;
 
 namespace ApiStockPrices
 {
