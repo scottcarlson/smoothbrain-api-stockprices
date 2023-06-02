@@ -16,12 +16,12 @@ builder.Services.AddResponseCompression(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // This may be required for actual server builds, but not for Docker localhost
 app.UseResponseCompression();
 
 app.MapPost("/stock-prices", (
     HttpContext context,
-    string identifier,
+    string identifier, // Casing is sensitive. Must be uppercase if using a ticker as identfier
     string? frequency
 ) =>
 {
@@ -36,9 +36,9 @@ app.MapPost("/stock-prices", (
 
     string ticker = security.Ticker;
 
-    string filename = $"{ticker.ToLower()}.{_frequency}.tea";
+    string filepath = ResponseProvider.GetFilePath(ticker, _frequency);
 
-    using (var teaFile = File.Exists(filename) ? TeaFile<Tick>.Append(filename) : TeaFile<Tick>.Create(filename))
+    using (var teaFile = File.Exists(filepath) ? TeaFile<Tick>.Append(filepath) : TeaFile<Tick>.Create(filepath))
     {
         foreach (StockPriceSummary stockPrice in stockPrices)
         {
@@ -74,23 +74,23 @@ app.MapGet("/stock-prices", (
     HttpContext context,
     string ticker,
     string? frequency,
-    string? from, // Must be a parsable datetime string. This is inclusive; Returns items on or after this date 
-    string? to, // Must be a parsable datetime string. This is inclusive; Returns items on or before this date 
+    string? from, // Must be a parsable datetime string. This is inclusive; Returns items on or after this date
+    string? to, // Must be a parsable datetime string. This is inclusive; Returns items on or before this date
     string? fields
 ) =>
 {
     context.Response.ContentType = "application/json";
 
-    string filename = $"{ticker.ToLower()}.{frequency ?? "daily"}.tea";
+    string filepath = ResponseProvider.GetFilePath(ticker, frequency);
 
-    if (!File.Exists(filename))
+    if (!File.Exists(filepath))
     {
         context.Response.StatusCode = 404;
 
         return JsonConvert.SerializeObject(new List<ResponseTick>());
     }
 
-    var responseProvider = new ResponseProvider(filename);
+    var responseProvider = new ResponseProvider(filepath);
 
     string response;
 
@@ -112,19 +112,22 @@ app.MapGet("/stock-prices", (
 // @see https://hintea.com/stream-http-response-content-in-asp-net-core-web-api-part-2-infinite-data-stream/
 // @see https://hintea.com/stream-http-response-content-in-asp-net-core-webapi/
 // @see https://github.com/hinteadan/net-http-stream-playground
+//
+// IMPORTANT: Do not provide `AcceptEncoding` header when making streaming request as
+// it will greatly increase response times due to each streamed chunk getting encoded.
 app.MapGet("/stock-prices/stream", async (
     HttpContext context,
     string ticker,
     string? frequency,
-    string? from, // Must be a parsable datetime string. This is inclusive; Returns items on or after this date 
-    string? to, // Must be a parsable datetime string. This is inclusive; Returns items on or before this date 
+    string? from, // Must be a parsable datetime string. This is inclusive; Returns items on or after this date
+    string? to, // Must be a parsable datetime string. This is inclusive; Returns items on or before this date
     string? fields,
     uint? streamAtItemCountGt
 ) =>
 {
-    string filename = $"{ticker.ToLower()}.{frequency ?? "daily"}.tea";
+    string filepath = ResponseProvider.GetFilePath(ticker, frequency);
 
-    if (!File.Exists(filename))
+    if (!File.Exists(filepath))
     {
         context.Response.StatusCode = 404;
 
@@ -134,7 +137,7 @@ app.MapGet("/stock-prices/stream", async (
     {
         uint _streamAtItemCountGt = streamAtItemCountGt ?? 0;
 
-        var responseProvider = new ResponseProvider(filename);
+        var responseProvider = new ResponseProvider(filepath);
 
         if (_streamAtItemCountGt < 1 || responseProvider.GetCount() > streamAtItemCountGt)
         {

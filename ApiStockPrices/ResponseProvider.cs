@@ -30,9 +30,9 @@ namespace ApiStockPrices
         };
         public static DateTime epochDate = new DateTime(1970, 1, 1);
 
-        public ResponseProvider(string filename)
+        public ResponseProvider(string filepath)
         {
-            teaFile = TeaFile<Tick>.OpenRead(filename);
+            teaFile = TeaFile<Tick>.OpenRead(filepath);
             itemCount = teaFile.Items.Count;
         }
 
@@ -48,7 +48,7 @@ namespace ApiStockPrices
             uint fromTimestamp = from == null ? 0 : GetTimestampFromDateStringJson(from);
 
             // This is inclusive. Return items on or before this date
-            uint toTimestamp = to == null ? 0 : GetTimestampFromDateStringJson(to); ; 
+            uint toTimestamp = to == null ? 0 : GetTimestampFromDateStringJson(to); ;
 
             // Ticks are from newest to oldest
             for (int i = 0; i < itemCount; i++)
@@ -94,8 +94,8 @@ namespace ApiStockPrices
         public async Task GetStreamedResponse(
             Stream stream,
             string? fieldsCsv = null,
-            string? from = null, // Must be a parsable datetime string. This is inclusive; Returns items on or after this date 
-            string? to = null    // Must be a parsable datetime string. This is inclusive; Returns items on or before this date 
+            string? from = null, // Must be a parsable datetime string. This is inclusive; Returns items on or after this date
+            string? to = null    // Must be a parsable datetime string. This is inclusive; Returns items on or before this date
         )
         {
             IncludedResponseFields includedFields = GetIncludedFields(fieldsCsv);
@@ -153,6 +153,11 @@ namespace ApiStockPrices
         public long GetCount()
         {
             return itemCount;
+        }
+
+        public static string GetFilePath(string ticker, string? frequency = null)
+        {
+            return $".teafiles/{ticker.ToLower()}.{frequency ?? "daily"}.tea";
         }
 
         public static string ToJson(object value)
