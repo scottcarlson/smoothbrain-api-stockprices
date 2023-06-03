@@ -36,13 +36,15 @@ namespace ApiStockPrices
             itemCount = teaFile.Items.Count;
         }
 
-        public string GetResponse(string? fieldsCsv, string? from = null, string? to = null)
+        public string GetResponse(string? fieldsCsv, string? from = null, string? to = null, uint? limit = null)
         {
             IncludedResponseFields includedFields = GetIncludedFields(fieldsCsv);
 
-            List<ResponseTick> stockPrices = from == null && to == null
-                ? new List<ResponseTick>((int)itemCount)
-                : new List<ResponseTick>();
+            int memoryCapacity = limit == null ? (int)itemCount : (int)limit;
+
+            List<TickResponse> stockPrices = from == null && to == null
+                ? new List<TickResponse>(memoryCapacity)
+                : new List<TickResponse>();
 
             // This is inclusive. Return items on or after this date
             uint fromTimestamp = from == null ? 0 : GetTimestampFromDateStringJson(from);
@@ -69,7 +71,7 @@ namespace ApiStockPrices
                     break;
                 }
 
-                stockPrices.Add(new ResponseTick
+                stockPrices.Add(new TickResponse
                 {
                     T = timestamp,
                     O = includedFields.IncludeOpen ? tick.O : null,
@@ -86,6 +88,11 @@ namespace ApiStockPrices
 
                     D = includedFields.IncludeDividend ? tick.D : null,
                 });
+
+                if (limit != null && (i + 1) == limit)
+                {
+                    break;
+                }
             }
 
             return ToJson(stockPrices);
@@ -126,7 +133,7 @@ namespace ApiStockPrices
                     break;
                 }
 
-                ResponseTick responseTick = new ResponseTick
+                TickResponse responseTick = new TickResponse
                 {
                     T = timestamp,
                     O = includedFields.IncludeOpen ? tick.O : null,

@@ -1,6 +1,6 @@
 ﻿namespace ApiStockPrices
 {
-    struct ResponseTick
+    struct TickResponse
     {
         public uint T;
 

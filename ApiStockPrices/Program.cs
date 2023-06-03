@@ -76,6 +76,7 @@ app.MapGet("/stock-prices", (
     string? frequency,
     string? from, // Must be a parsable datetime string. This is inclusive; Returns items on or after this date
     string? to, // Must be a parsable datetime string. This is inclusive; Returns items on or before this date
+    uint? limit,
     string? fields
 ) =>
 {
@@ -87,7 +88,7 @@ app.MapGet("/stock-prices", (
     {
         context.Response.StatusCode = 404;
 
-        return JsonConvert.SerializeObject(new List<ResponseTick>());
+        return JsonConvert.SerializeObject(new List<TickResponse>());
     }
 
     var responseProvider = new ResponseProvider(filepath);
@@ -96,7 +97,7 @@ app.MapGet("/stock-prices", (
 
     try
     {
-        response = responseProvider.GetResponse(fields, from, to);
+        response = responseProvider.GetResponse(fields, from, to, limit);
     }
     finally
     {
@@ -131,7 +132,7 @@ app.MapGet("/stock-prices/stream", async (
     {
         context.Response.StatusCode = 404;
 
-        await StreamProvider.WriteValueToStream(context.Response.Body, JsonConvert.SerializeObject(new List<ResponseTick>()));
+        await StreamProvider.WriteValueToStream(context.Response.Body, JsonConvert.SerializeObject(new List<TickResponse>()));
     }
     else
     {
@@ -157,6 +158,42 @@ app.MapGet("/stock-prices/stream", async (
         // @see https://stackoverflow.com/a/1864586
         responseProvider.Dispose();
     }
+});
+
+app.MapGet("/stock-prices/count", (
+    HttpContext context,
+    string ticker,
+    string? frequency
+) =>
+{
+    context.Response.ContentType = "application/json";
+
+    string filepath = ResponseProvider.GetFilePath(ticker, frequency);
+
+    if (!File.Exists(filepath))
+    {
+        context.Response.StatusCode = 404;
+
+        return JsonConvert.SerializeObject(new CountResponse {});
+    }
+
+    var responseProvider = new ResponseProvider(filepath);
+
+    string response;
+
+    try
+    {
+        response = ResponseProvider.ToJson(new CountResponse {
+            Count = responseProvider.GetCount(),
+        });
+    }
+    finally
+    {
+        // @see https://stackoverflow.com/a/1864586
+        responseProvider.Dispose();
+    }
+
+    return response;
 });
 
 app.Run();

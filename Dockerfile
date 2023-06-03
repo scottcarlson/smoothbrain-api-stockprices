@@ -19,7 +19,4 @@ ENV INTRINIO_API_KEY ${INTRINIO_API_KEY}
 COPY --from=build-env /publish .
 EXPOSE 80
 
-# ENTRYPOINT ["tail", "-f", "/dev/null"]
-
-# Use this entrypoint when converting to HTTP/2 streamable API to actually run the server
 ENTRYPOINT ["dotnet", "ApiStockPrices.dll"]
