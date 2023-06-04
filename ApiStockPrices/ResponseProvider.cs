@@ -50,10 +50,12 @@ namespace ApiStockPrices
             uint fromTimestamp = from == null ? 0 : GetTimestampFromDateStringJson(from);
 
             // This is inclusive. Return items on or before this date
-            uint toTimestamp = to == null ? 0 : GetTimestampFromDateStringJson(to); ;
+            uint toTimestamp = to == null ? 0 : GetTimestampFromDateStringJson(to);
 
-            // Ticks are from newest to oldest
-            for (int i = 0; i < itemCount; i++)
+            int iterationCount = (int)itemCount - 1;
+
+            // Return ticks from newest to oldest in non-streamed requests
+            for (int i = iterationCount; i >= 0; i--)
             {
                 teaFile.SetFilePointerToItem(i);
 
@@ -71,29 +73,15 @@ namespace ApiStockPrices
                     break;
                 }
 
-                stockPrices.Add(new TickResponse
-                {
-                    T = timestamp,
-                    O = includedFields.IncludeOpen ? tick.O : null,
-                    H = includedFields.IncludeHigh ? tick.H : null,
-                    L = includedFields.IncludeLow ? tick.L : null,
-                    C = includedFields.IncludeClose ? tick.C : null,
-                    V = includedFields.IncludeVolume ? tick.V : null,
+                stockPrices.Add(GetTickResponse(tick, timestamp, includedFields));
 
-                    AO = includedFields.IncludeAdjustedOpen ? tick.AO : null,
-                    AH = includedFields.IncludeAdjustedHigh ? tick.AH : null,
-                    AL = includedFields.IncludeAdjustedLow ? tick.AL : null,
-                    AC = includedFields.IncludeAdjustedClose ? tick.AC : null,
-                    AV = includedFields.IncludeAdjustedVolume ? tick.AV : null,
-
-                    D = includedFields.IncludeDividend ? tick.D : null,
-                });
-
-                if (limit != null && (i + 1) == limit)
+                if (limit != null && (itemCount - i) == limit)
                 {
                     break;
                 }
             }
+
+            teaFile.SetFilePointerToItem(0);
 
             return ToJson(stockPrices);
         }
@@ -102,7 +90,8 @@ namespace ApiStockPrices
             Stream stream,
             string? fieldsCsv = null,
             string? from = null, // Must be a parsable datetime string. This is inclusive; Returns items on or after this date
-            string? to = null    // Must be a parsable datetime string. This is inclusive; Returns items on or before this date
+            string? to = null,    // Must be a parsable datetime string. This is inclusive; Returns items on or before this date
+            uint? limit = null
         )
         {
             IncludedResponseFields includedFields = GetIncludedFields(fieldsCsv);
@@ -111,10 +100,11 @@ namespace ApiStockPrices
             uint fromTimestamp = from == null ? 0 : GetTimestampFromDateStringJson(from);
 
             // This is inclusive. Return items on or before this date
-            uint toTimestamp = to == null ? 0 : GetTimestampFromDateStringJson(to); ;
+            uint toTimestamp = to == null ? 0 : GetTimestampFromDateStringJson(to);
 
             await StreamProvider.WriteValueToStream(stream, $"[{Environment.NewLine}");
 
+            // Return ticks from oldest to newest in streamed request
             for (int i = 0; i < itemCount; i++)
             {
                 teaFile.SetFilePointerToItem(i);
@@ -133,28 +123,40 @@ namespace ApiStockPrices
                     break;
                 }
 
-                TickResponse responseTick = new TickResponse
-                {
-                    T = timestamp,
-                    O = includedFields.IncludeOpen ? tick.O : null,
-                    H = includedFields.IncludeHigh ? tick.H : null,
-                    L = includedFields.IncludeLow ? tick.L : null,
-                    C = includedFields.IncludeClose ? tick.C : null,
-                    V = includedFields.IncludeVolume ? tick.V : null,
-
-                    AO = includedFields.IncludeAdjustedOpen ? tick.AO : null,
-                    AH = includedFields.IncludeAdjustedHigh ? tick.AH : null,
-                    AL = includedFields.IncludeAdjustedLow ? tick.AL : null,
-                    AC = includedFields.IncludeAdjustedClose ? tick.AC : null,
-                    AV = includedFields.IncludeAdjustedVolume ? tick.AV : null,
-
-                    D = includedFields.IncludeDividend ? tick.D : null,
-                };
+                TickResponse responseTick = GetTickResponse(tick, timestamp, includedFields);
 
                 await StreamProvider.WriteValueToStream(stream, $"{ToJson(responseTick)},{Environment.NewLine}");
+
+                if (limit != null && (i + 1) == limit)
+                {
+                    break;
+                }
             }
 
+            teaFile.SetFilePointerToItem(0);
+
             await StreamProvider.WriteValueToStream(stream, $"null{Environment.NewLine}]");
+        }
+
+        private TickResponse GetTickResponse(Tick tick, uint timestamp, IncludedResponseFields includedFields)
+        {
+            return new TickResponse
+            {
+                T = timestamp,
+                O = includedFields.IncludeOpen ? tick.O : null,
+                H = includedFields.IncludeHigh ? tick.H : null,
+                L = includedFields.IncludeLow ? tick.L : null,
+                C = includedFields.IncludeClose ? tick.C : null,
+                V = includedFields.IncludeVolume ? tick.V : null,
+
+                AO = includedFields.IncludeAdjustedOpen ? tick.AO : null,
+                AH = includedFields.IncludeAdjustedHigh ? tick.AH : null,
+                AL = includedFields.IncludeAdjustedLow ? tick.AL : null,
+                AC = includedFields.IncludeAdjustedClose ? tick.AC : null,
+                AV = includedFields.IncludeAdjustedVolume ? tick.AV : null,
+
+                D = includedFields.IncludeDividend ? tick.D : null,
+            };
         }
 
         public long GetCount()
@@ -162,9 +164,9 @@ namespace ApiStockPrices
             return itemCount;
         }
 
-        public static string GetFilePath(string ticker, string? frequency = null)
+        public static string GetFilePath(string provider, string ticker, string? frequency = null)
         {
-            return $".teafiles/{ticker.ToLower()}.{frequency ?? "daily"}.tea";
+            return $".teafiles/{provider}/{ticker.ToLower()}.{frequency ?? "daily"}.tea";
         }
 
         public static string ToJson(object value)

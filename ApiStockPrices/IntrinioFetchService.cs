@@ -21,13 +21,13 @@ namespace ApiStockPrices
             Configuration.Default.AllowRetries = true;
         }
 
-        public ApiResponseSecurityStockPrices GetStockPrices(string identifier, string frequency)
+        public ApiResponseSecurityStockPrices GetStockPrices(string identifier, string frequency, DateTime? startDate = null)
 		{
-            ApiResponseSecurityStockPrices result = securityApi.GetSecurityStockPrices(identifier, null, null, frequency, pageSize);
+            ApiResponseSecurityStockPrices result = securityApi.GetSecurityStockPrices(identifier, startDate ?? null, null, frequency, pageSize);
 
             if (result.NextPage != null)
             {
-                result.StockPrices = GetRecursiveBatchStockPrices(identifier, frequency, result.NextPage, result.StockPrices);
+                result.StockPrices = GetRecursiveBatchStockPrices(identifier, frequency, startDate, result.NextPage, result.StockPrices);
             }
 
             return result;
@@ -36,10 +36,11 @@ namespace ApiStockPrices
         public static List<StockPriceSummary> GetRecursiveBatchStockPrices(
             string identifier,
             string frequency,
+            DateTime? startDate,
             string nextPage,
             List<StockPriceSummary> previousBatch
         ) {
-            ApiResponseSecurityStockPrices result = securityApi.GetSecurityStockPrices(identifier, null, null, frequency, pageSize, nextPage);
+            ApiResponseSecurityStockPrices result = securityApi.GetSecurityStockPrices(identifier, startDate ?? null, null, frequency, pageSize, nextPage);
 
             List<StockPriceSummary> stockPrices = new List<StockPriceSummary>(previousBatch.Count + result.StockPrices.Count);
 
@@ -48,7 +49,7 @@ namespace ApiStockPrices
 
             if (result.NextPage != null)
             {
-                return GetRecursiveBatchStockPrices(identifier, frequency, result.NextPage, stockPrices);
+                return GetRecursiveBatchStockPrices(identifier, frequency, startDate, result.NextPage, stockPrices);
             }
 
             return stockPrices;
