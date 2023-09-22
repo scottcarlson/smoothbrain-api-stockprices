@@ -1,10 +1,6 @@
 ﻿using Newtonsoft.Json;
 using ApiStockPrices;
 using Intrinio.SDK.Model;
-using TeaTime;
-using System.IO;
-using System.Formats.Tar;
-using System.Collections.Generic;
 
 var builder = WebApplication.CreateBuilder(args);
 

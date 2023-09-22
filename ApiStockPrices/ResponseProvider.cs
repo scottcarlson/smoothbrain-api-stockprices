@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using TeaTime;
 
 namespace ApiStockPrices
@@ -46,6 +44,7 @@ namespace ApiStockPrices
                 ? new List<TickResponse>(memoryCapacity)
                 : new List<TickResponse>();
 
+            // Look into this solution for faster datetime range searching: https://stackoverflow.com/a/20576109/2221024
             // This is inclusive. Return items on or after this date
             uint fromTimestamp = from == null ? 0 : GetTimestampFromDateStringJson(from);
 

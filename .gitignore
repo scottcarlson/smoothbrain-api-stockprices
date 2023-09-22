@@ -405,4 +405,4 @@ ASALocalRun/
 .localhistory/
 
 $ TeaFiles
-.teafiles/**/*.tea
+*.tea

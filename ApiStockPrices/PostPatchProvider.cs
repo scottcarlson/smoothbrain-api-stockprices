@@ -1,6 +1,4 @@
-﻿using System;
-using Intrinio.SDK.Model;
-using Newtonsoft.Json;
+﻿using Intrinio.SDK.Model;
 using TeaTime;
 
 namespace ApiStockPrices

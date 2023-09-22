@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Intrinio.SDK.Api;
+﻿using Intrinio.SDK.Api;
 using Intrinio.SDK.Client;
 using Intrinio.SDK.Model;
 
@@ -16,6 +14,8 @@ namespace ApiStockPrices
             Configuration.Default.AddApiKey(
                 "api_key",
                 // Defaults to limited sandbox API Key
+                // To set the env value in development on MacOS, start VS at the CLI terminal with:
+                // `export INTRINIO_API_KEY={VALUE} && /Applications/Visual\ Studio.app/Contents/MacOS/VisualStudio`
                 Environment.GetEnvironmentVariable("INTRINIO_API_KEY") ?? "Ojc4MGZkOWQxZTY0ODdhOTUwN2FkYTFmYzI2ZGE0NzA1"
             );
             Configuration.Default.AllowRetries = true;
