@@ -3,7 +3,7 @@
 
 # SmoothBrain - Stock Prices API
 
-SmoothBrain stock prices API using TeaFiles on .NET 7
+A blazing fast daily stock prices API using TeaFiles on .NET 7
 
 ## Development
 
@@ -15,7 +15,7 @@ If you run a `Release` server using the ▶ button instead of the debug server, 
 
 ### Environment Values
 
-For setting environment variables on MacOS, you need to start the Visual Studio IDE editor from teh CLI terminal and `export` the env values with teh launch command. Example:
+For setting environment variables on MacOS, you need to start the Visual Studio IDE editor from teh CLI terminal and `export` the env values with the launch command. Example:
 
 ```
 export INTRINIO_API_KEY={VALUE} && /Applications/Visual\ Studio.app/Contents/MacOS/VisualStudio
