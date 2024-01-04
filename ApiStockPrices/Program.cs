@@ -4,18 +4,21 @@ using Intrinio.SDK.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;
 });
 
-// Add services to the container.
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-// app.UseHttpsRedirection(); // This may be required for actual server builds, but not for Docker localhost
 app.UseResponseCompression();
+
+if (!builder.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 // Endpoints
 app.MapPost("/stock-prices", (

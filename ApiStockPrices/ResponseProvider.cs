@@ -89,7 +89,7 @@ namespace ApiStockPrices
             Stream stream,
             string? fieldsCsv = null,
             string? from = null, // Must be a parsable datetime string. This is inclusive; Returns items on or after this date
-            string? to = null,    // Must be a parsable datetime string. This is inclusive; Returns items on or before this date
+            string? to = null,   // Must be a parsable datetime string. This is inclusive; Returns items on or before this date
             uint? limit = null
         )
         {
@@ -208,4 +208,3 @@ namespace ApiStockPrices
         }
     }
 }
-
