@@ -151,6 +151,14 @@ app.MapGet("/stock-prices", (
     string? fields
 ) =>
 {
+    if (limit != null && (from != null || to != null))
+    {
+        context.Response.ContentType = "text/plain";
+        context.Response.StatusCode = 400;
+
+        return "Cannot declare a limit and a range. Use the 'from' and 'to' parameters to limit a range.";
+    }
+
     context.Response.ContentType = "application/json";
 
     string filepath = ResponseProvider.GetFilePath(provider ?? "intrinio", ticker, frequency);
@@ -203,7 +211,14 @@ app.MapGet("/stock-prices/stream", async (
 {
     string filepath = ResponseProvider.GetFilePath(provider ?? "intrinio", ticker, frequency);
 
-    if (!File.Exists(filepath))
+    if (limit != null && (from != null || to != null))
+    {
+        context.Response.ContentType = "text/plain";
+        context.Response.StatusCode = 400;
+
+        await StreamProvider.WriteValueToStream(context.Response.Body, "Cannot declare a limit and a range. Use the 'from' and 'to' parameters to limit a range.");
+    }
+    else if (!File.Exists(filepath))
     {
         context.Response.StatusCode = 404;
 
