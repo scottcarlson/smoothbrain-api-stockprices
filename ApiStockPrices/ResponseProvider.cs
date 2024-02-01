@@ -88,13 +88,15 @@ namespace ApiStockPrices
         }
 
         public async Task GetStreamedResponse(
-            Stream stream,
+            HttpContext context,
             string? fieldsCsv = null,
             string? from = null, // Must be a parsable datetime string. This is inclusive; Returns items on or after this date
             string? to = null,   // Must be a parsable datetime string. This is inclusive; Returns items on or before this date
             uint? limit = null
         )
         {
+            Stream stream = context.Response.Body;
+
             IncludedResponseFields includedFields = GetIncludedFields(fieldsCsv);
 
             // This is inclusive. Return items on or after this date
@@ -108,6 +110,13 @@ namespace ApiStockPrices
             // Return ticks from oldest to newest in streamed request
             for (int i = 0; i < itemCount; i++)
             {
+                CancellationToken cancellationToken = context.RequestAborted;
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    // The client has aborted the request; End the stream
+                    break;
+                }
+
                 teaFile.SetFilePointerToItem(i);
 
                 Tick tick = teaFile.Read();
@@ -116,12 +125,12 @@ namespace ApiStockPrices
 
                 if (toTimestamp != 0 && timestamp > toTimestamp)
                 {
-                    continue;
+                    break;
                 }
 
                 if (timestamp < fromTimestamp)
                 {
-                    break;
+                    continue;
                 }
 
                 TickResponse responseTick = GetTickResponse(tick, timestamp, includedFields);

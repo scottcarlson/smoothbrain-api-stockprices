@@ -234,7 +234,7 @@ app.MapGet("/stock-prices/stream", async (
         {
             context.Response.ContentType = "text/plain; charset=utf-8; x-subtype=json";
 
-            await responseProvider.GetStreamedResponse(context.Response.Body, fields, from, to, limit);
+            await responseProvider.GetStreamedResponse(context, fields, from, to, limit);
         }
         else
         {
