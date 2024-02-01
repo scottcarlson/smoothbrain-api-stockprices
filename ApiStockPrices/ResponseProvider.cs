@@ -16,6 +16,8 @@ namespace ApiStockPrices
         public Boolean IncludeAdjustedClose;
         public Boolean IncludeAdjustedVolume;
         public Boolean IncludeDividend;
+        public Boolean IncludeSplitRatio;
+        public Boolean IncludeFactor;
     }
 
     public class ResponseProvider
@@ -155,6 +157,8 @@ namespace ApiStockPrices
                 AV = includedFields.IncludeAdjustedVolume ? tick.AV : null,
 
                 D = includedFields.IncludeDividend ? tick.D : null,
+                SR = includedFields.IncludeSplitRatio ? tick.SR : null,
+                F = includedFields.IncludeFactor ? tick.F : null,
             };
         }
 
@@ -192,6 +196,8 @@ namespace ApiStockPrices
                 IncludeAdjustedClose = isFieldsUndefined || fields.Contains("AC"),
                 IncludeAdjustedVolume = isFieldsUndefined || fields.Contains("AV"),
                 IncludeDividend = isFieldsUndefined || fields.Contains("D"),
+                IncludeSplitRatio = isFieldsUndefined || fields.Contains("SR"),
+                IncludeFactor = isFieldsUndefined || fields.Contains("F"),
             };
         }
 
