@@ -4,6 +4,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Configurations>Release;Debug</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -13,7 +14,7 @@
     <PackageReference Include="H.Necessaire" Version="2.34.9" />
     <PackageReference Include="H.Necessaire.Serialization" Version="2.34.9" />
     <PackageReference Include="TeaFiles.Net" Version="1.0.0.35" />
-    <PackageReference Include="Intrinio.SDK" Version="7.4.5" />
+    <PackageReference Include="Intrinio.SDK" Version="7.4.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 </Project>
